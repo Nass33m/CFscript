@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>URL Link Decoder</title>
+  </head>
+  <body>
+    <h1>URL Link Decoder</h1>
+    <p>Paste a URL below to decode its link:</p>
+    <input type="text" id="url-input" placeholder="Enter URL here" />
+    <button id="decode-button">Decode</button>
+    <br /><br />
+    <p>Decoded link:</p>
+    <p id="link-output"></p>
+    <p>Parameters Output:</p>
+    <p id="param-output"></p>
+
+    <script>
+      const urlInput = document.getElementById("url-input");
+      const linkOutput = document.getElementById("link-output");
+      const paramOutput = document.getElementById("param-output");
+      const decodeButton = document.getElementById("decode-button");
+      const corsProxyUrl = "https://api.allorigins.win/get?url="; // alternative CORS proxy server
+
+      function decodeLink() {
+        const url = `${corsProxyUrl}${encodeURIComponent(urlInput.value)}`;
+        const linkRegex = /<a\s*id="aLink".*?href="(.*?)"/is;
+
+        fetch(url)
+          .then((response) => response.json())
+          .then((data) => {
+            const html = data.contents;
+            const linkMatch = html.match(linkRegex);
+            if (linkMatch) {
+              const encodedLink = linkMatch[1];
+              const decodedLink = decodeURIComponent(encodedLink);
+              linkOutput.textContent = decodedLink;
+              extractParams(decodedLink);
+            } else {
+              linkOutput.textContent = "Link not found";
+              paramOutput.textContent = "";
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching HTML content:", error);
+            linkOutput.textContent = "Error fetching HTML content";
+            paramOutput.textContent = "";
+          });
+      }
+
+		function extractParams(link) {
+  const paramRegex = /\bid=([^&]*)|&?sign=([^&]*)/i;
+  const match = link.match(paramRegex);
+  if (match) {
+    const id = match[1] ? `${match[1]}=` : '';
+    const sign = match[2] ? match[2] : '';
+    paramOutput.textContent = `id=${id}&sign=${sign}`;
+  } else {
+    paramOutput.textContent = "No parameters found";
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+      decodeButton.addEventListener("click", decodeLink);
+    </script>
+  </body>
+</html>
